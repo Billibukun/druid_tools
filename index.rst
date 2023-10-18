@@ -35,7 +35,7 @@ AbridgedLifeTable
 
 .. code-block:: python
 
-   from census_tools import AbridgedLifeTable
+   from druid_tools.census_tools import AbridgedLifeTable
 
    age_intervals = ['0', '1-4', '5-9']
    death_rates = [0.05, 0.01, 0.005]
@@ -66,7 +66,7 @@ CompleteLifeTable
 
 .. code-block:: python
 
-   from census_tools import CompleteLifeTable
+   from druid_tools.census_tools import CompleteLifeTable
 
    ages = list(range(101))
    death_rates = [0.05] * 5 + [0.01] * 10 + ...  # Sample rates
