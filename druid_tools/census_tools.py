@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from statsmodels.tsa.seasonal import seasonal_decompose
 
+
 def apply_weights(df, weight_dict):
     """
     Apply weights to specific columns in a DataFrame.
@@ -19,6 +20,7 @@ def apply_weights(df, weight_dict):
             weighted_df[column] = weighted_df[column] * weight
     return weighted_df
 
+
 def create_weights(data, method='equal', custom_fn=None):
     """Creates weights for a data series.
 
@@ -33,13 +35,13 @@ def create_weights(data, method='equal', custom_fn=None):
     Returns:
         A NumPy array containing the weights.
     """
-    
+
     # Check for empty data or zero variance
     if len(data) == 0:
         raise ValueError("Data array is empty.")
     if np.var(data) == 0:
         raise ValueError("Variance of data is zero.")
-    
+
     if method == 'equal':
         weights = np.ones(len(data)) / len(data)
     elif method == 'inverse_variance':
@@ -47,81 +49,84 @@ def create_weights(data, method='equal', custom_fn=None):
         weights /= np.sum(weights)  # Normalize to sum to 1
     elif method == 'custom':
         if custom_fn is None:
-            raise ValueError("Custom function must be provided for custom method.")
+            raise ValueError(
+                "Custom function must be provided for custom method.")
         weights = custom_fn(data)
     else:
         raise ValueError(f'Invalid method: {method}')
 
     return weights
 
+
 def simple_moving_average(data, window_size):
-  """Calculates the simple moving average of a data series.
+    """Calculates the simple moving average of a data series.
 
-  Args:
-    data: A NumPy array containing the data series.
-    window_size: The size of the moving window.
+    Args:
+        data: A NumPy array containing the data series.
+        window_size: The size of the moving window.
 
-  Returns:
-    A NumPy array containing the smoothed data series.
-  """
+    Returns:
+        A NumPy array containing the smoothed data series.
+    """
 
-  smoothed_data = np.zeros(len(data))
-  for i in range(window_size, len(data)):
-    smoothed_data[i] = np.mean(data[i - window_size:i])
-  return smoothed_data
+    smoothed_data = np.zeros(len(data))
+    for i in range(window_size, len(data)):
+        smoothed_data[i] = np.mean(data[i - window_size:i])
+    return smoothed_data
 
 
 def weighted_moving_average(data, weights):
-  """Calculates the weighted moving average of a data series.
+    """Calculates the weighted moving average of a data series.
 
-  Args:
-    data: A NumPy array containing the data series.
-    weights: A NumPy array containing the weights for each data point.
+    Args:
+        data: A NumPy array containing the data series.
+        weights: A NumPy array containing the weights for each data point.
 
-  Returns:
-    A NumPy array containing the smoothed data series.
-  """
+    Returns:
+        A NumPy array containing the smoothed data series.
+    """
 
-  smoothed_data = np.zeros(len(data))
-  for i in range(len(data)):
-    smoothed_data[i] = np.sum(data[i - len(weights) + 1:i + 1] * weights) / np.sum(weights)
-  return smoothed_data
+    smoothed_data = np.zeros(len(data))
+    for i in range(len(data)):
+        smoothed_data[i] = np.sum(
+            data[i - len(weights) + 1:i + 1] * weights) / np.sum(weights)
+    return smoothed_data
 
-import numpy as np
 
 class ExponentialSmoother:
-  """An exponential smoother for smoothing data series.
+    """An exponential smoother for smoothing data series.
 
-  Args:
-    alpha: The smoothing parameter (a value between 0 and 1).
-  """
+    Args:
+        alpha: The smoothing parameter (a value between 0 and 1).
+    """
 
-  def __init__(self, alpha):
-    self.alpha = alpha
-    self.smoothed_value = None
+    def __init__(self, alpha):
+        self.alpha = alpha
+        self.smoothed_value = None
 
-  def smooth(self, data_point):
-    if self.smoothed_value is None:
-      self.smoothed_value = data_point
-    else:
-      self.smoothed_value = self.alpha * data_point + (1 - self.alpha) * self.smoothed_value
-    return self.smoothed_value
+    def smooth(self, data_point):
+        if self.smoothed_value is None:
+        self.smoothed_value = data_point
+        else:
+        self.smoothed_value = self.alpha * data_point + \
+            (1 - self.alpha) * self.smoothed_value
+        return self.smoothed_value
 
 
 def seasonal_adjust(data, period):
-  """Seasonally adjusts a data series.
+    """Seasonally adjusts a data series.
 
-  Args:
-    data: A NumPy array containing the data series.
-    period: The period of the seasonality (e.g., 12 for monthly data).
+    Args:
+        data: A NumPy array containing the data series.
+        period: The period of the seasonality (e.g., 12 for monthly data).
 
-  Returns:
-    A NumPy array containing the seasonally adjusted data series.
-  """
+    Returns:
+        A NumPy array containing the seasonally adjusted data series.
+    """
 
-  decomposition = seasonal_decompose(data, period=period)
-  seasonally_adjusted_data = decomposition.trend + decomposition.resid
-  return seasonally_adjusted_data
+    decomposition = seasonal_decompose(data, period=period)
+    seasonally_adjusted_data = decomposition.trend + decomposition.resid
+    return seasonally_adjusted_data
 
 
 class AbridgedLifeTable:
@@ -136,19 +141,23 @@ class AbridgedLifeTable:
 
     def calculate_nqx(self, n, nK=2.5):
         """Calculate probability of dying within the age interval."""
-        self.life_table['nqx'] = (n * self.life_table['Death_Rate']) / (1 + (n - nK) * self.life_table['Death_Rate'])
+        self.life_table['nqx'] = (
+            n * self.life_table['Death_Rate']) / (1 + (n - nK) * self.life_table['Death_Rate'])
 
     def calculate_ndx(self):
         """Calculate number of deaths within the age interval."""
         if 'lx' not in self.life_table.columns:
-            self.life_table['lx'] = [self.cohort_size] + [0] * (len(self.life_table) - 1)
+            self.life_table['lx'] = [self.cohort_size] + \
+                [0] * (len(self.life_table) - 1)
         self.life_table['ndx'] = self.life_table['lx'] * self.life_table['nqx']
 
     def calculate_lx_nLx(self, n, nK=2.5):
         """Calculate number of survivors and person-years lived."""
         for i in range(1, len(self.life_table)):
-            self.life_table.loc[i, 'lx'] = self.life_table.loc[i-1, 'lx'] - self.life_table.loc[i-1, 'ndx']
-        self.life_table['nLx'] = n * self.life_table['lx'] - nK * self.life_table['ndx']
+            self.life_table.loc[i, 'lx'] = self.life_table.loc[i -
+                                                               1, 'lx'] - self.life_table.loc[i-1, 'ndx']
+        self.life_table['nLx'] = n * self.life_table['lx'] - \
+            nK * self.life_table['ndx']
 
     def calculate_Tx_ex(self):
         """Calculate total person-years lived above age x and life expectancy."""
@@ -176,19 +185,23 @@ class CompleteLifeTable:
 
     def calculate_qx(self):
         """Calculate probability of dying between age x and x+1."""
-        self.life_table['qx'] = self.life_table['Death_Rate'] / (1 + 0.5 * (1 - self.life_table['Death_Rate']))
+        self.life_table['qx'] = self.life_table['Death_Rate'] / \
+            (1 + 0.5 * (1 - self.life_table['Death_Rate']))
 
     def calculate_dx(self):
         """Calculate number of deaths between age x and x+1."""
         if 'lx' not in self.life_table.columns:
-            self.life_table['lx'] = [self.cohort_size] + [0] * (len(self.life_table) - 1)
+            self.life_table['lx'] = [self.cohort_size] + \
+                [0] * (len(self.life_table) - 1)
         self.life_table['dx'] = self.life_table['lx'] * self.life_table['qx']
 
     def calculate_lx_Lx(self):
         """Calculate number of survivors and person-years lived between age x and x+1."""
         for i in range(1, len(self.life_table)):
-            self.life_table.loc[i, 'lx'] = self.life_table.loc[i-1, 'lx'] - self.life_table.loc[i-1, 'dx']
-        self.life_table['Lx'] = self.life_table['lx'] - 0.5 * self.life_table['dx']
+            self.life_table.loc[i, 'lx'] = self.life_table.loc[i -
+                                                               1, 'lx'] - self.life_table.loc[i-1, 'dx']
+        self.life_table['Lx'] = self.life_table['lx'] - \
+            0.5 * self.life_table['dx']
 
     def calculate_Tx_ex(self):
         """Calculate total person-years lived after age x and life expectancy."""
@@ -203,6 +216,7 @@ class CompleteLifeTable:
         self.calculate_Tx_ex()
         return self.life_table
 
+
 def construct_life_table(death_rates, cohort_size=100000):
     life_table = pd.DataFrame({
         'Age': death_rates.index,
@@ -215,7 +229,8 @@ def construct_life_table(death_rates, cohort_size=100000):
     # Initialize lx (Number of people alive at the beginning of age x)
     life_table['lx'] = cohort_size
     for i in range(1, len(life_table)):
-        life_table.loc[i, 'lx'] = life_table.loc[i - 1, 'lx'] - life_table.loc[i - 1, 'dx']
+        life_table.loc[i, 'lx'] = life_table.loc[i -
+                                                 1, 'lx'] - life_table.loc[i - 1, 'dx']
 
     # Compute Lx (Total person-years lived between age x and x+1)
     life_table['Lx'] = life_table['lx'] - 0.5 * life_table['dx']
